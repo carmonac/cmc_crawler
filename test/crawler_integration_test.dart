@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
-import '../lib/crawler.dart';
-import '../lib/crawler_config.dart';
+import 'package:cmc_crawler/crawler.dart';
+import 'package:cmc_crawler/crawler_config.dart';
 import 'server/test_server.dart';
 
 void main() {
@@ -182,6 +182,42 @@ void main() {
         files.any((f) => f.contains('pagetoavoid')),
         isFalse,
         reason: 'No files should contain "pagetoavoid" in their name',
+      );
+    });
+
+    test('should use custom user agent when specified', () async {
+      final testOutputDirCustomUA = path.join(testOutputDir, 'custom_ua_test');
+      const customUserAgent = 'Test Bot 2.0 (Custom User Agent)';
+
+      final config = CrawlerConfig(
+        baseUrl: server.baseUrl,
+        maxWorkers: 1,
+        outputDirectory: testOutputDirCustomUA,
+        userAgent: customUserAgent,
+        skipImages: true,
+        skipCSS: true,
+        skipJS: true,
+      );
+
+      final crawler = Crawler(config);
+      await crawler.start();
+
+      final hostDir = Directory(path.join(testOutputDirCustomUA, 'localhost'));
+      expect(await hostDir.exists(), isTrue);
+
+      // Verify that crawling completed successfully with custom user agent
+      final indexFile = File(path.join(hostDir.path, 'index.html'));
+      expect(
+        await indexFile.exists(),
+        isTrue,
+        reason: 'Index file should be downloaded with custom user agent',
+      );
+
+      // Verify the config contains the custom user agent
+      expect(
+        config.userAgent,
+        equals(customUserAgent),
+        reason: 'Config should contain the custom user agent',
       );
     });
   });

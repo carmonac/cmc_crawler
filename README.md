@@ -41,6 +41,7 @@ dart run bin/main.dart --url https://example.com
 | `--target` | Specific target URL (if different from base) | Same as `--url` | No |
 | `--workers` | Number of worker threads | 4 | No |
 | `--output` | Output directory for downloaded files | `output` | No |
+| `--user-agent` | Custom User-Agent string for HTTP requests | `CMC Crawler 1.0` | No |
 | `--skip-css` | Skip downloading CSS files | false | No |
 | `--skip-js` | Skip downloading JavaScript files | false | No |
 | `--skip-images` | Skip downloading image files | false | No |
@@ -77,6 +78,11 @@ dart run bin/main.dart --url https://example.com --allowed-domains example.com,s
 #### Exclude specific paths
 ```bash
 dart run bin/main.dart --url https://example.com --disallowed-paths /admin,/private,/api
+```
+
+#### Custom User-Agent
+```bash
+dart run bin/main.dart --url https://example.com --user-agent "Mozilla/5.0 (Custom Bot/2.0)"
 ```
 
 #### Complete example with all options

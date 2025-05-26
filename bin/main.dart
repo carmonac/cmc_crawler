@@ -45,6 +45,12 @@ void main(List<String> arguments) async {
       abbr: 'd',
       help: 'Disallowed URL paths',
     )
+    ..addOption(
+      'user-agent',
+      abbr: 'u',
+      help: 'Custom User-Agent string',
+      defaultsTo: 'CMC Crawler 1.0',
+    )
     ..addFlag(
       'help',
       abbr: 'h',
@@ -70,6 +76,9 @@ void main(List<String> arguments) async {
       print(
         '  dart run bin/main.dart -b https://example.com -a subdomain.example.com -d /admin',
       );
+      print(
+        '  dart run bin/main.dart -b https://example.com -u "Mozilla/5.0 (Custom Bot)"',
+      );
       return;
     }
 
@@ -82,6 +91,7 @@ void main(List<String> arguments) async {
     final skipImages = results['skip-images'] as bool;
     final allowedDomains = results['allowed-domains'] as List<String>;
     final disallowedPaths = results['disallowed-paths'] as List<String>;
+    final userAgent = results['user-agent'] as String;
 
     // Validate base URL
     final uri = Uri.tryParse(baseUrl);
@@ -101,6 +111,7 @@ void main(List<String> arguments) async {
       allowedDomains: allowedDomains,
       disallowedPaths: disallowedPaths,
       outputDirectory: outputDir,
+      userAgent: userAgent,
     );
 
     print('=== CMC Crawler Configuration ===');
@@ -108,6 +119,7 @@ void main(List<String> arguments) async {
     print('Target URL: ${config.targetUrl ?? config.baseUrl}');
     print('Max Workers: ${config.maxWorkers}');
     print('Output Directory: ${config.outputDirectory}');
+    print('User Agent: ${config.userAgent}');
     print('Skip CSS: ${config.skipCSS}');
     print('Skip JS: ${config.skipJS}');
     print('Skip Images: ${config.skipImages}');

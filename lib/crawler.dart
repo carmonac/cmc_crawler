@@ -93,14 +93,17 @@ class Crawler {
       final baseUri = Uri.parse(config.baseUrl);
 
       // Check if it's the same domain as base URL or in allowed domains
-      if (uri.host != baseUri.host && !config.allowedDomains.contains(uri.host)) {
+      if (uri.host != baseUri.host &&
+          !config.allowedDomains.contains(uri.host)) {
         return false;
       }
 
       // Check disallowed paths
       for (final disallowedPath in config.disallowedPaths) {
         if (uri.path.startsWith(disallowedPath)) {
-          print('[Filter] Skipping disallowed path: $url (matches: $disallowedPath)');
+          print(
+            '[Filter] Skipping disallowed path: $url (matches: $disallowedPath)',
+          );
           return false;
         }
       }
@@ -224,6 +227,7 @@ class Crawler {
       'allowedDomains': config.allowedDomains,
       'disallowedPaths': config.disallowedPaths,
       'outputDirectory': config.outputDirectory,
+      'userAgent': config.userAgent,
     };
   }
 

@@ -55,6 +55,7 @@ class CrawlerWorker {
       allowedDomains: List<String>.from(json['allowedDomains'] ?? []),
       disallowedPaths: List<String>.from(json['disallowedPaths'] ?? []),
       outputDirectory: json['outputDirectory'],
+      userAgent: json['userAgent'] ?? 'CMC Crawler 1.0',
     );
   }
 
@@ -66,7 +67,7 @@ class CrawlerWorker {
       print('[Worker] Processing: ${task.url}');
 
       final response = await http
-          .get(Uri.parse(task.url), headers: {'User-Agent': 'CMC Crawler 1.0'})
+          .get(Uri.parse(task.url), headers: {'User-Agent': config.userAgent})
           .timeout(Duration(seconds: 30));
 
       if (response.statusCode != 200) {
@@ -125,7 +126,7 @@ class CrawlerWorker {
       final queryHash = uri.query.hashCode.abs().toString();
       final name = path.basenameWithoutExtension(fileName);
       final ext = path.extension(fileName);
-      fileName = '${name}_q${queryHash}$ext';
+      fileName = '${name}_q$queryHash$ext';
     }
 
     final directory = Directory(path.join(outputDir, uri.host));
