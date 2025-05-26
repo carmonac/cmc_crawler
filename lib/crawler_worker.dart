@@ -5,50 +5,8 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:path/path.dart' as path;
 import 'crawler_config.dart';
 import 'crawler_task.dart';
-
-class WorkerMessage {
-  final String type;
-  final dynamic data;
-
-  WorkerMessage(this.type, this.data);
-
-  Map<String, dynamic> toJson() => {'type': type, 'data': data};
-
-  factory WorkerMessage.fromJson(Map<String, dynamic> json) =>
-      WorkerMessage(json['type'], json['data']);
-}
-
-class WorkerResult {
-  final String url;
-  final bool success;
-  final List<String> foundUrls;
-  final String? error;
-  final String? filePath;
-
-  WorkerResult({
-    required this.url,
-    required this.success,
-    this.foundUrls = const [],
-    this.error,
-    this.filePath,
-  });
-
-  Map<String, dynamic> toJson() => {
-    'url': url,
-    'success': success,
-    'foundUrls': foundUrls,
-    'error': error,
-    'filePath': filePath,
-  };
-
-  factory WorkerResult.fromJson(Map<String, dynamic> json) => WorkerResult(
-    url: json['url'],
-    success: json['success'],
-    foundUrls: List<String>.from(json['foundUrls'] ?? []),
-    error: json['error'],
-    filePath: json['filePath'],
-  );
-}
+import 'worker_message.dart';
+import 'worker_result.dart';
 
 class CrawlerWorker {
   static void workerEntryPoint(List<dynamic> args) async {
@@ -58,7 +16,7 @@ class CrawlerWorker {
 
     await for (final message in receivePort) {
       if (message is Map<String, dynamic>) {
-        final workerMessage = WorkerMessage.fromJson(message);
+        final workerMessage = WorkerMessage.fromMap(message);
 
         if (workerMessage.type == 'crawl') {
           final taskData = workerMessage.data as Map<String, dynamic>;
@@ -67,17 +25,17 @@ class CrawlerWorker {
             referrer: taskData['referrer'] ?? '',
             depth: taskData['depth'] ?? 0,
           );
-          final config = _configFromJson(taskData['config']);
+          final config = _configfromMap(taskData['config']);
 
           final result = await _processTask(task, config);
 
           // Check if there's a specific response port for this task
           if (taskData.containsKey('responsePort')) {
             final responsePort = taskData['responsePort'] as SendPort;
-            responsePort.send(result.toJson());
+            responsePort.send(result.toMap());
           } else {
             // Fallback to main sendPort for backwards compatibility
-            sendPort.send(result.toJson());
+            sendPort.send(result.toMap());
           }
         } else if (workerMessage.type == 'stop') {
           break;
@@ -86,7 +44,7 @@ class CrawlerWorker {
     }
   }
 
-  static CrawlerConfig _configFromJson(Map<String, dynamic> json) {
+  static CrawlerConfig _configfromMap(Map<String, dynamic> json) {
     return CrawlerConfig(
       baseUrl: json['baseUrl'],
       targetUrl: json['targetUrl'],

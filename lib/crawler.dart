@@ -5,6 +5,8 @@ import 'dart:isolate';
 import 'crawler_config.dart';
 import 'crawler_task.dart';
 import 'crawler_worker.dart';
+import 'worker_message.dart';
+import 'worker_result.dart';
 
 class Crawler {
   final CrawlerConfig config;
@@ -143,21 +145,21 @@ class Crawler {
           'url': task.url,
           'referrer': task.referrer,
           'depth': task.depth,
-          'config': _configToJson(),
+          'config': _configtoMap(),
           'responsePort': taskReceivePort.sendPort,
-        }).toJson(),
+        }).toMap(),
       );
 
       // Wait for result from the task-specific port
       final resultData = await taskReceivePort.first as Map<String, dynamic>;
       taskReceivePort.close(); // Close the port after receiving the result
 
-      final result = WorkerResult.fromJson(resultData);
+      final result = WorkerResult.fromMap(resultData);
 
       _completedTasks++;
 
       if (result.success) {
-        print('[${_completedTasks}/$_totalTasks] ✓ Downloaded: ${result.url}');
+        print('[$_completedTasks/$_totalTasks] ✓ Downloaded: ${result.url}');
         if (result.filePath != null) {
           print('  Saved to: ${result.filePath}');
         }
@@ -175,7 +177,7 @@ class Crawler {
           }
         }
       } else {
-        print('[${_completedTasks}/$_totalTasks] ✗ Failed: ${result.url}');
+        print('[$_completedTasks/$_totalTasks] ✗ Failed: ${result.url}');
         if (result.error != null) {
           print('  Error: ${result.error}');
         }
@@ -185,7 +187,7 @@ class Crawler {
     }
   }
 
-  Map<String, dynamic> _configToJson() {
+  Map<String, dynamic> _configtoMap() {
     return {
       'baseUrl': config.baseUrl,
       'targetUrl': config.targetUrl,
@@ -203,7 +205,7 @@ class Crawler {
     print('Stopping workers...');
 
     for (int i = 0; i < _workerSendPorts.length; i++) {
-      _workerSendPorts[i].send(WorkerMessage('stop', null).toJson());
+      _workerSendPorts[i].send(WorkerMessage('stop', null).toMap());
     }
 
     for (final isolate in _workers) {
