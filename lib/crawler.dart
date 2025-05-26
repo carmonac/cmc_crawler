@@ -77,13 +77,39 @@ class Crawler {
   }
 
   void _addTask(CrawlerTask task) {
-    if (!_visitedUrls.contains(task.url)) {
+    if (!_visitedUrls.contains(task.url) && _isValidUrl(task.url)) {
       _taskQueue.add(task);
       _visitedUrls.add(task.url);
       _totalTasks++;
       print(
         '[Queue] Added task: ${task.url} (Queue size: ${_taskQueue.length})',
       );
+    }
+  }
+
+  bool _isValidUrl(String url) {
+    try {
+      final uri = Uri.parse(url);
+      final baseUri = Uri.parse(config.baseUrl);
+
+      // Check if it's the same domain as base URL or in allowed domains
+      if (uri.host != baseUri.host && !config.allowedDomains.contains(uri.host)) {
+        return false;
+      }
+
+      // Check disallowed paths
+      for (final disallowedPath in config.disallowedPaths) {
+        if (uri.path.startsWith(disallowedPath)) {
+          print('[Filter] Skipping disallowed path: $url (matches: $disallowedPath)');
+          return false;
+        }
+      }
+
+      // Only HTTP/HTTPS
+      return uri.scheme == 'http' || uri.scheme == 'https';
+    } catch (e) {
+      print('[Filter] Invalid URL: $url - $e');
+      return false;
     }
   }
 
